@@ -14,10 +14,16 @@
    limitations under the License.
 */
 
-#include <spdlog/spdlog.h>
+#include <cstdlib>
+#include "window.hpp"
 
 int main()
 {
-    spdlog::info("Hello, {}", "World!");
+    Window window(1280, 720, "Vk App");
+
+    while(!window.shouldClose()) {
+        glfwPollEvents();
+    }
+
     return EXIT_SUCCESS;
 }
