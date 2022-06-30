@@ -17,9 +17,13 @@
 #include <cstdlib>
 #include "window.hpp"
 
+#include "rendering/Device.hpp"
+
 int main()
 {
     Window window(1280, 720, "Vk App");
+    VkPhysicalDeviceFeatures targetFeatures{};
+    Device device{ window.context(), window.surface(), targetFeatures };
 
     while(!window.shouldClose()) {
         glfwPollEvents();

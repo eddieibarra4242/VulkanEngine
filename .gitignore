@@ -33,4 +33,5 @@
 
 # Project Specific
 .vscode/
+staging/
 build/

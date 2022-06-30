@@ -1,4 +1,7 @@
-file(GLOB_RECURSE CPP_SOURCES *.cpp)
+set(CPP_SOURCES 
+  main.cpp 
+  window.cpp 
+  rendering/Device.cpp)
 
 add_library(vulkan SHARED IMPORTED)
 set_target_properties(vulkan PROPERTIES 
