@@ -51,6 +51,10 @@ class Device
 
     [[nodiscard]] constexpr const VkPhysicalDeviceProperties& properties() const { return m_physDevice.m_properties; }
 
+    [[nodiscard]] uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
+    [[nodiscard]] VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
+    VkFormat getDepthFormat();
+
     DELETE_COPY_AND_MOVE(Device);
 
   private:
@@ -60,4 +64,6 @@ class Device
     VkQueue m_graphicsQueue;
     VkQueue m_presentQueue;
     VkCommandPool m_graphicsPool;
+
+    VkFormat m_depthFormat = VK_FORMAT_UNDEFINED;
 };

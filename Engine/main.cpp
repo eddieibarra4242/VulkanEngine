@@ -18,12 +18,14 @@
 #include "window.hpp"
 
 #include "rendering/Device.hpp"
+#include "rendering/SwapChain.hpp"
 
 int main()
 {
     Window window(1280, 720, "Vk App");
     VkPhysicalDeviceFeatures targetFeatures{};
     Device device{ window.context(), window.surface(), targetFeatures };
+    SwapChain sc{ window.surface(), device };
 
     while (!window.shouldClose()) {
         glfwPollEvents();

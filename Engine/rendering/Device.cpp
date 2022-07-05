@@ -32,12 +32,9 @@ void getDeviceExtensions(PhysicalDevice& device)
     vkEnumerateDeviceExtensionProperties(device.m_physicalDevice, nullptr, &extensionCount, nullptr);
     device.m_availableExtensions.resize(extensionCount);
     vkEnumerateDeviceExtensionProperties(device.m_physicalDevice, nullptr, &extensionCount, device.m_availableExtensions.data());
-
-    device.m_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-    vkGetPhysicalDeviceFeatures2(device.m_physicalDevice, &device.m_features);
 }
 
-void findQueueFamilies(PhysicalDevice& device, const VkSurfaceKHR& surface)
+void findQueueFamilies(PhysicalDevice& device, VkSurfaceKHR surface)
 {
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device.m_physicalDevice, &queueFamilyCount, nullptr);
@@ -63,7 +60,7 @@ void findQueueFamilies(PhysicalDevice& device, const VkSurfaceKHR& surface)
     }
 }
 
-void querySwapChainSupport(PhysicalDevice& device, const VkSurfaceKHR& surface)
+void querySwapChainSupport(PhysicalDevice& device, VkSurfaceKHR surface)
 {
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device.m_physicalDevice, surface, &device.m_capabilities);
 
@@ -84,7 +81,7 @@ void querySwapChainSupport(PhysicalDevice& device, const VkSurfaceKHR& surface)
     }
 }
 
-void readPhysicalDevice(VkPhysicalDevice& vkDeviceIn, const VkSurfaceKHR& surface, PhysicalDevice& deviceOut)
+void readPhysicalDevice(VkPhysicalDevice vkDeviceIn, VkSurfaceKHR surface, PhysicalDevice& deviceOut)
 {
     deviceOut.m_physicalDevice = vkDeviceIn;
     getDeviceExtensions(deviceOut);
@@ -192,12 +189,18 @@ Device::Device(const VkInstance& context, const VkSurfaceKHR& surface, const VkP
     createInfo.enabledLayerCount = 0;
 #endif
 
-    VkPhysicalDeviceDescriptorIndexingFeatures vpddif{};
-    vpddif.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
-    vpddif.runtimeDescriptorArray = VK_TRUE;
-    m_physDevice.m_features.pNext = &vpddif;
 
-    createInfo.pNext = &m_physDevice.m_features;
+    // FIXME: The following commented code randomly seg faults in driver.
+
+    // m_physDevice.m_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    // vkGetPhysicalDeviceFeatures2(m_physDevice.m_physicalDevice, &m_physDevice.m_features);
+
+    // VkPhysicalDeviceDescriptorIndexingFeatures vpddif{};
+    // vpddif.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+    // vpddif.runtimeDescriptorArray = VK_TRUE;
+    // m_physDevice.m_features.pNext = &vpddif;
+
+    // createInfo.pNext = &m_physDevice.m_features;
 
     ASSERT_VK_SUCCESS(vkCreateDevice(m_physDevice.m_physicalDevice, &createInfo, nullptr, &m_logicalDevice), "Failed to create logical device!");
 
@@ -216,4 +219,43 @@ Device::~Device()
 {
     vkDestroyCommandPool(m_logicalDevice, m_graphicsPool, nullptr);
     vkDestroyDevice(m_logicalDevice, nullptr);
+}
+
+uint32_t Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const
+{
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(m_physDevice.m_physicalDevice, &memProperties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+            return i;
+        }
+    }
+
+    return -1U;
+}
+
+VkFormat Device::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
+{
+    for (VkFormat format : candidates) {
+        VkFormatProperties props;
+        vkGetPhysicalDeviceFormatProperties(m_physDevice.m_physicalDevice, format, &props);
+
+        if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+            return format;
+        } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+            return format;
+        }
+    }
+
+    return VK_FORMAT_UNDEFINED;
+}
+
+VkFormat Device::getDepthFormat()
+{
+    if (m_depthFormat == VK_FORMAT_UNDEFINED) {
+        m_depthFormat = findSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    }
+
+    return m_depthFormat;
 }
