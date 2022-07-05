@@ -20,22 +20,25 @@
 #include <string_view>
 #include <spdlog/spdlog.h>
 
-#define DELETE_COPY(Class) Class(const Class&) = delete; \
-void operator=(const Class&) = delete
+#define DELETE_COPY(Class)        \
+    Class(const Class&) = delete; \
+    void operator=(const Class&) = delete
 
-#define DELETE_MOVE(Class) Class(Class&&) = delete; \
-void operator=(Class&&) = delete
+#define DELETE_MOVE(Class)   \
+    Class(Class&&) = delete; \
+    void operator=(Class&&) = delete
 
-#define DELETE_COPY_AND_MOVE(Class) Class(const Class&) = delete; \
-void operator=(const Class&) = delete; \
-Class(Class&&) = delete; \
-void operator=(Class&&) = delete
+#define DELETE_COPY_AND_MOVE(Class)        \
+    Class(const Class&) = delete;          \
+    void operator=(const Class&) = delete; \
+    Class(Class&&) = delete;               \
+    void operator=(Class&&) = delete
 
 #define ASSERT_VK_SUCCESS(res, msg) __vk_util_assert(__FILE__, __LINE__, res, msg)
 
-constexpr void __vk_util_assert(const std::string &file, const int &line, VkResult res, const std::string_view& msg)
+constexpr void __vk_util_assert(const std::string& file, const int& line, VkResult res, const std::string_view& msg)
 {
-    if(res == VK_SUCCESS)
+    if (res == VK_SUCCESS)
         return;
 
     spdlog::critical("[{}:{}]\n{}\nVkResult: {}", file, line, msg.cbegin(), res);
@@ -43,6 +46,7 @@ constexpr void __vk_util_assert(const std::string &file, const int &line, VkResu
 }
 
 template<typename T>
-constexpr size_t elemSize(size_t arraySize) {
+constexpr size_t elemSize(size_t arraySize)
+{
     return arraySize / sizeof(T);
 }

@@ -1,7 +1,9 @@
 set(CPP_SOURCES 
   main.cpp 
   window.cpp 
-  rendering/Device.cpp)
+  rendering/Device.cpp
+  rendering/Image.cpp
+  rendering/SwapChain.cpp)
 
 add_library(vulkan SHARED IMPORTED)
 set_target_properties(vulkan PROPERTIES 

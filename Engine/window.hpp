@@ -23,8 +23,9 @@
 
 constexpr std::array<const char*, 1> validationLayers{ "VK_LAYER_KHRONOS_validation" };
 
-class Window {
-public:
+class Window
+{
+  public:
     Window(uint32_t width, uint32_t height, const char* title);
     ~Window();
 
@@ -39,7 +40,7 @@ public:
     [[nodiscard]] constexpr const VkInstance& context() const { return m_context; }
     [[nodiscard]] constexpr const VkSurfaceKHR& surface() const { return m_windowSurface; }
 
-private:
+  private:
     GLFWwindow* m_window;
 
     uint32_t m_width;

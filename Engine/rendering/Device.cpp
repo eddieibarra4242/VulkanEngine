@@ -84,23 +84,25 @@ void querySwapChainSupport(PhysicalDevice& device, const VkSurfaceKHR& surface)
     }
 }
 
-void readPhysicalDevice(VkPhysicalDevice& vkDeviceIn, const VkSurfaceKHR& surface, PhysicalDevice& deviceOut) {
+void readPhysicalDevice(VkPhysicalDevice& vkDeviceIn, const VkSurfaceKHR& surface, PhysicalDevice& deviceOut)
+{
     deviceOut.m_physicalDevice = vkDeviceIn;
     getDeviceExtensions(deviceOut);
     findQueueFamilies(deviceOut, surface);
     querySwapChainSupport(deviceOut, surface);
 }
 
-bool checkTargetedFeatures(const PhysicalDevice& physicalDevice, const VkPhysicalDeviceFeatures& targetFeatures) {
-    for(size_t i = 0; i < elemSize<VkBool32>(sizeof(VkPhysicalDeviceFeatures)); i++) {
+bool checkTargetedFeatures(const PhysicalDevice& physicalDevice, const VkPhysicalDeviceFeatures& targetFeatures)
+{
+    for (size_t i = 0; i < elemSize<VkBool32>(sizeof(VkPhysicalDeviceFeatures)); i++) {
         const VkBool32* targets = reinterpret_cast<const VkBool32*>(&targetFeatures);
         const VkBool32* supported = reinterpret_cast<const VkBool32*>(&physicalDevice.m_features.features);
 
-        if(targets[i] == VK_FALSE) {
+        if (targets[i] == VK_FALSE) {
             continue;
         }
 
-        if(targets[i] != supported[i]) {
+        if (targets[i] != supported[i]) {
             return false;
         }
     }
@@ -108,15 +110,16 @@ bool checkTargetedFeatures(const PhysicalDevice& physicalDevice, const VkPhysica
     return true;
 }
 
-bool checkExtensionSupport(const PhysicalDevice& physicalDevice) {
+bool checkExtensionSupport(const PhysicalDevice& physicalDevice)
+{
     std::set<std::string> extensionNames;
 
     for (auto extension : physicalDevice.m_availableExtensions) {
         extensionNames.emplace(extension.extensionName);
     }
 
-    for(auto devExtension : deviceExtensions) {
-        if(!extensionNames.contains(devExtension)) {
+    for (auto devExtension : deviceExtensions) {
+        if (!extensionNames.contains(devExtension)) {
             return false;
         }
     }
@@ -126,13 +129,10 @@ bool checkExtensionSupport(const PhysicalDevice& physicalDevice) {
 
 bool isSuitable(const PhysicalDevice& physicalDevice, const VkPhysicalDeviceFeatures& targetFeatures)
 {
-    return checkTargetedFeatures(physicalDevice, targetFeatures) &&
-    checkExtensionSupport(physicalDevice) &&
-    physicalDevice.m_graphicsFamily.has_value() && physicalDevice.m_presentFamily.has_value() &&
-    !physicalDevice.m_formats.empty() && !physicalDevice.m_presentModes.empty();
+    return checkTargetedFeatures(physicalDevice, targetFeatures) && checkExtensionSupport(physicalDevice) && physicalDevice.m_graphicsFamily.has_value() && physicalDevice.m_presentFamily.has_value() && !physicalDevice.m_formats.empty() && !physicalDevice.m_presentModes.empty();
 }
 
-Device::Device(const VkInstance &context, const VkSurfaceKHR &surface, const VkPhysicalDeviceFeatures& targetFeatures)
+Device::Device(const VkInstance& context, const VkSurfaceKHR& surface, const VkPhysicalDeviceFeatures& targetFeatures)
 {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(context, &deviceCount, nullptr);
@@ -142,26 +142,26 @@ Device::Device(const VkInstance &context, const VkSurfaceKHR &surface, const VkP
         throw std::runtime_error("No physical devices.");
     }
 
-    std::vector<VkPhysicalDevice> devices { deviceCount };
+    std::vector<VkPhysicalDevice> devices{ deviceCount };
     vkEnumeratePhysicalDevices(context, &deviceCount, devices.data());
 
-    for(auto physDev : devices) {
+    for (auto physDev : devices) {
         readPhysicalDevice(physDev, surface, m_physDevice);
-        if(isSuitable(m_physDevice, targetFeatures)) {
+        if (isSuitable(m_physDevice, targetFeatures)) {
             break;
         } else {
             m_physDevice.m_physicalDevice = VK_NULL_HANDLE;
         }
     }
 
-    if(m_physDevice.m_physicalDevice == VK_NULL_HANDLE) {
+    if (m_physDevice.m_physicalDevice == VK_NULL_HANDLE) {
         spdlog::critical("Failed to find suitable GPU, consider using OpenGL!");
         throw std::runtime_error("No physical devices made the cut.");
     }
 
     std::set<uint32_t> uniqueQueueFamilies = { m_physDevice.m_graphicsFamily.value(), m_physDevice.m_presentFamily.value() };
     size_t num_queues = uniqueQueueFamilies.size();
-    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos { num_queues };
+    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos{ num_queues };
 
     float queuePriority = 1.0f;
     size_t i = 0;
@@ -186,10 +186,10 @@ Device::Device(const VkInstance &context, const VkSurfaceKHR &surface, const VkP
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
 #ifndef NDEBUG
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
+    createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+    createInfo.ppEnabledLayerNames = validationLayers.data();
 #else
-        createInfo.enabledLayerCount = 0;
+    createInfo.enabledLayerCount = 0;
 #endif
 
     VkPhysicalDeviceDescriptorIndexingFeatures vpddif{};
@@ -209,7 +209,7 @@ Device::Device(const VkInstance &context, const VkSurfaceKHR &surface, const VkP
     poolInfo.queueFamilyIndex = m_physDevice.m_graphicsFamily.value();
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-    ASSERT_VK_SUCCESS (vkCreateCommandPool(m_logicalDevice, &poolInfo, nullptr, &m_graphicsPool), "failed to create command pool!");
+    ASSERT_VK_SUCCESS(vkCreateCommandPool(m_logicalDevice, &poolInfo, nullptr, &m_graphicsPool), "failed to create command pool!");
 }
 
 Device::~Device()

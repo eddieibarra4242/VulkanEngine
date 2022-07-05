@@ -25,7 +25,7 @@
 struct PhysicalDevice
 {
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
-    
+
     std::vector<VkExtensionProperties> m_availableExtensions;
     VkPhysicalDeviceProperties m_properties;
     VkPhysicalDeviceFeatures2 m_features;
@@ -39,7 +39,7 @@ struct PhysicalDevice
 
 class Device
 {
-public:
+  public:
     Device(const VkInstance& context, const VkSurfaceKHR& surface, const VkPhysicalDeviceFeatures& targetFeatures);
     ~Device();
 
@@ -52,7 +52,8 @@ public:
     [[nodiscard]] constexpr const VkPhysicalDeviceProperties& properties() const { return m_physDevice.m_properties; }
 
     DELETE_COPY_AND_MOVE(Device);
-private:
+
+  private:
     PhysicalDevice m_physDevice;
 
     VkDevice m_logicalDevice;

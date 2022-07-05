@@ -22,8 +22,8 @@
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT messageType,
-    const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-    [[maybe_unused]] void *pUserData)
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    [[maybe_unused]] void* pUserData)
 {
     switch (messageSeverity) {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
@@ -46,7 +46,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     return VK_FALSE;
 }
 
-void setupValidationLayers([[maybe_unused]] VkInstance &context, [[maybe_unused]] VkDebugUtilsMessengerCreateInfoEXT createInfo, [[maybe_unused]] VkDebugUtilsMessengerEXT &debugMessanger)
+void setupValidationLayers([[maybe_unused]] VkInstance& context, [[maybe_unused]] VkDebugUtilsMessengerCreateInfoEXT createInfo, [[maybe_unused]] VkDebugUtilsMessengerEXT& debugMessanger)
 {
 #ifndef NDEBUG
     PFN_vkCreateDebugUtilsMessengerEXT func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(context, "vkCreateDebugUtilsMessengerEXT"));
@@ -68,7 +68,7 @@ void resizeCallback(GLFWwindow* window, int width, int height)
 
 Window::Window(uint32_t width, uint32_t height, const char* title) : m_width{ width }, m_height{ height }
 {
-    if(!glfwInit()) {
+    if (!glfwInit()) {
         spdlog::critical("Could not initialize GLFW!");
         return;
     }
@@ -78,7 +78,7 @@ Window::Window(uint32_t width, uint32_t height, const char* title) : m_width{ wi
 
     m_window = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height), title, nullptr, nullptr);
 
-    const GLFWvidmode *vm = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    const GLFWvidmode* vm = glfwGetVideoMode(glfwGetPrimaryMonitor());
     glfwSetWindowPos(m_window, (vm->width - static_cast<int>(width)) / 2, (vm->height - static_cast<int>(height)) / 2);
     glfwShowWindow(m_window);
 
@@ -86,7 +86,7 @@ Window::Window(uint32_t width, uint32_t height, const char* title) : m_width{ wi
     glfwSetWindowSizeCallback(m_window, &resizeCallback);
 
     //------- Vulkan Initialization --------
-    VkApplicationInfo appInfo{ };
+    VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = title;
     appInfo.applicationVersion = VK_API_VERSION_1_3;
@@ -94,17 +94,17 @@ Window::Window(uint32_t width, uint32_t height, const char* title) : m_width{ wi
     appInfo.engineVersion = VK_API_VERSION_1_3;
     appInfo.apiVersion = VK_API_VERSION_1_3;
 
-    VkInstanceCreateInfo instInfo{ };
+    VkInstanceCreateInfo instInfo{};
     instInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instInfo.pApplicationInfo = &appInfo;
 
     uint32_t glfwExtensionCount = 0;
-    const char **glfwExtensions;
+    const char** glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-    std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo {};
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
     debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
@@ -136,7 +136,7 @@ Window::~Window()
 {
 #ifndef NDEBUG
     auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(m_context, "vkDestroyDebugUtilsMessengerEXT"));
-        
+
     if (func != nullptr) {
         func(m_context, m_debugMessanger, nullptr);
     }

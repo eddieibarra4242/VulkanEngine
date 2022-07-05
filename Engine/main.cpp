@@ -25,7 +25,7 @@ int main()
     VkPhysicalDeviceFeatures targetFeatures{};
     Device device{ window.context(), window.surface(), targetFeatures };
 
-    while(!window.shouldClose()) {
+    while (!window.shouldClose()) {
         glfwPollEvents();
     }
 
