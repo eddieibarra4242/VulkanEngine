@@ -6,6 +6,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include "Buffer.hpp"
+
 static constexpr size_t PIXEL_SIZE = 4;
 
 void createImage(const Device& device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
@@ -38,6 +40,32 @@ void createImage(const Device& device, uint32_t width, uint32_t height, VkFormat
     ASSERT_VK_SUCCESS(vkAllocateMemory(device.device(), &allocInfo, nullptr, &imageMemory), "failed to allocate image memory!");
 
     vkBindImageMemory(device.device(), image, imageMemory, 0);
+}
+
+void copyBufferToImage(VkDevice device, VkCommandPool graphicsPool, VkQueue submitQueue, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+{
+    VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, graphicsPool);
+
+    VkBufferImageCopy region{};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1;
+
+    region.imageOffset = { 0, 0, 0 };
+    region.imageExtent = {
+        width,
+        height,
+        1
+    };
+
+    vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+    endSingleTimeCommands(device, submitQueue, graphicsPool, commandBuffer);
 }
 
 void transitionImageLayout(const Device& device, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
@@ -92,17 +120,7 @@ void transitionImageLayout(const Device& device, VkImage image, VkFormat format,
         throw std::invalid_argument("Bad Transition");
     }
 
-    vkCmdPipelineBarrier(
-        commandBuffer,
-        sourceStage,
-        destinationStage,
-        0,
-        0,
-        nullptr,
-        0,
-        nullptr,
-        1,
-        &barrier);
+    vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
     endSingleTimeCommands(device.device(), device.graphicsQueue(), device.graphicsPool(), commandBuffer);
 }
@@ -130,13 +148,13 @@ void Image::createInternal(void* data, VkFormat format)
 {
     size_t imageSize = m_width * m_height * PIXEL_SIZE;
 
-    // Buffer buf { m_device, imageSize, 1, 1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
-    // buf.write(data, imageSize, 0);
+    Buffer buf{ m_device, imageSize, 1, 1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
+    buf.write(data, imageSize, 0);
 
     createImage(m_device, m_width, m_height, format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_image, m_memory);
 
     transitionImageLayout(m_device, m_image, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    // copyBufferToImage(m_device, buf.buffer(), m_image, static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height));
+    copyBufferToImage(m_device.device(), m_device.graphicsPool(), m_device.graphicsQueue(), buf.buffer(), m_image, static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height));
     transitionImageLayout(m_device, m_image, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     m_imageView = createImageView(m_device.device(), m_image, format, VK_IMAGE_ASPECT_COLOR_BIT);
