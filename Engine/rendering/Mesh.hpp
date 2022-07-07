@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <array>
 
+#include "Buffer.hpp"
+
 struct Vertex
 {
     glm::vec3 pos;
@@ -48,4 +50,100 @@ struct Vertex
 
         return attributeDescriptions;
     }
+};
+
+class Mesh
+{
+public:
+    Mesh(const Device &device, const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices);
+
+    void record_draw_command(const VkCommandBuffer &commandBuffer, uint32_t instanceCount = 1, uint32_t instanceIDOffset = 0) const;
+
+    DELETE_COPY(Mesh);
+
+    void operator=(Mesh&& other);
+    Mesh(Mesh&& other);
+
+private:
+    Buffer m_vertexBuf;
+    Buffer m_indexBuf;
+
+    uint32_t m_drawCount;
+};
+
+class Model
+{
+public:
+    Model() = default;
+
+    Model(
+    const std::vector<uint32_t> &indices, 
+    const std::vector<glm::vec3> &positions, 
+    const std::vector<glm::vec2> &texCoords, 
+    const std::vector<glm::vec3> &normals = std::vector<glm::vec3>(), 
+    const std::vector<glm::vec3> &tangents = std::vector<glm::vec3>()) : 
+    m_indices(indices),
+    m_positions(positions),
+    m_texCoords(texCoords),
+    m_normals(normals),
+    m_tangents(tangents) { }
+
+    constexpr bool isValid() const
+    {
+        return m_positions.size() != 0 && m_indices.size() != 0;
+    }
+
+    constexpr bool isComplete() const
+    {
+        size_t necessarySize = m_vertices.size();
+        return m_positions.size() == necessarySize && m_texCoords.size() == necessarySize && m_normals.size() == necessarySize && m_tangents.size() == necessarySize;
+    }
+
+    inline uint32_t addVertex(glm::vec3 position) { 
+        uint32_t ret = static_cast<uint32_t>(m_positions.size()); 
+        m_positions.push_back(position); 
+        return ret; 
+    }
+    
+    inline uint32_t addVertex(glm::vec3 position, glm::vec2 texCoord) { 
+        uint32_t ret = static_cast<uint32_t>(m_positions.size()); 
+        m_positions.push_back(position); 
+        m_texCoords.push_back(texCoord); 
+        return ret; 
+    }
+    
+    inline uint32_t addVertex(glm::vec3 position, glm::vec2 texCoord, glm::vec3 normal) { 
+        uint32_t ret = static_cast<uint32_t>(m_positions.size()); 
+        m_positions.push_back(position); 
+        m_texCoords.push_back(texCoord); 
+        m_normals.push_back(normal); 
+        return ret; 
+    }
+
+    inline uint32_t addVertex(glm::vec3 position, glm::vec2 texCoord, glm::vec3 normal, glm::vec3 tangent) { 
+        uint32_t ret = static_cast<uint32_t>(m_positions.size()); 
+        m_positions.push_back(position); 
+        m_texCoords.push_back(texCoord); 
+        m_normals.push_back(normal); 
+        m_tangents.push_back(tangent); 
+        return ret; 
+    }
+
+    inline void addFace(uint32_t i0, uint32_t i1, uint32_t i2) { m_indices.push_back(i0); m_indices.push_back(i1); m_indices.push_back(i2); }
+
+    void calcNormals();
+    void calcTangents();
+    Model& finalize();
+
+    constexpr const std::vector<Vertex> &getVertices() const { return m_vertices; }
+    constexpr const std::vector<uint32_t> &getIndices() const { return m_indices; }
+
+private:
+    std::vector<Vertex> m_vertices;
+    std::vector<uint32_t> m_indices;
+
+    std::vector<glm::vec3> m_positions;
+    std::vector<glm::vec2> m_texCoords;
+    std::vector<glm::vec3> m_normals;
+    std::vector<glm::vec3> m_tangents;
 };
