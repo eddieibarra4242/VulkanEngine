@@ -20,12 +20,16 @@
 #include "rendering/Device.hpp"
 #include "rendering/SwapChain.hpp"
 
+#include "rendering/Pipeline.hpp"
+
 int main()
 {
     Window window(1280, 720, "Vk App");
     VkPhysicalDeviceFeatures targetFeatures{};
     Device device{ window.context(), window.surface(), targetFeatures };
     SwapChain sc{ window.surface(), device };
+
+    BasicRasterPipeline basicRasterPipeline{ device, sc };
 
     while (!window.shouldClose()) {
         glfwPollEvents();

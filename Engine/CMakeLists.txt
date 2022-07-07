@@ -3,7 +3,8 @@ set(CPP_SOURCES
   window.cpp 
   rendering/Device.cpp
   rendering/Image.cpp
-  rendering/SwapChain.cpp)
+  rendering/SwapChain.cpp
+  rendering/BasicRasterPipeline.cpp)
 
 add_library(vulkan SHARED IMPORTED)
 set_target_properties(vulkan PROPERTIES 
