@@ -4,7 +4,8 @@ set(CPP_SOURCES
   rendering/Device.cpp
   rendering/Image.cpp
   rendering/SwapChain.cpp
-  rendering/BasicRasterPipeline.cpp)
+  rendering/BasicRasterPipeline.cpp
+  rendering/Buffer.cpp)
 
 add_library(vulkan SHARED IMPORTED)
 set_target_properties(vulkan PROPERTIES 
