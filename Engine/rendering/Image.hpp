@@ -19,6 +19,7 @@ class Image
     ~Image();
 
     [[nodiscard]] constexpr const VkImage& image() const { return m_image; }
+    [[nodiscard]] constexpr const VkImageView& imageView() const { return m_imageView; }
 
     [[nodiscard]] inline VkDescriptorImageInfo& descInfo()
     {
