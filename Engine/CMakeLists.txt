@@ -6,7 +6,8 @@ set(CPP_SOURCES
   rendering/SwapChain.cpp
   rendering/BasicRasterPipeline.cpp
   rendering/Buffer.cpp
-  rendering/Mesh.cpp)
+  rendering/Mesh.cpp
+  rendering/RenderingEngine.cpp)
 
 add_library(vulkan SHARED IMPORTED)
 set_target_properties(vulkan PROPERTIES 
