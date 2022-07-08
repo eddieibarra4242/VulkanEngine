@@ -24,9 +24,6 @@
 
 #include "rendering/Mesh.hpp"
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
-
 int main()
 {
     Window window(1280, 720, "Vk App");
@@ -35,27 +32,9 @@ int main()
 
     RenderingEngine engine{ window.surface(), device };
 
-    Model triangle;
-
-    triangle.addFace(
-        triangle.addVertex(glm::vec3(-1, 1, 0)),
-        triangle.addVertex(glm::vec3(0, 1, 0)),
-        triangle.addVertex(glm::vec3(-.5f, -1, 0)));
-
-    triangle.finalize();
-
-    engine.addMesh(std::make_shared<Mesh>(device, triangle.getVertices(), triangle.getIndices()));
-
-    Model triangle2;
-
-    triangle2.addFace(
-        triangle2.addVertex(glm::vec3(0, 1, 0)),
-        triangle2.addVertex(glm::vec3(1, 1, 0)),
-        triangle2.addVertex(glm::vec3(.5f, -1, 0)));
-
-    triangle2.finalize();
-
-    engine.addMesh(std::make_shared<Mesh>(device, triangle2.getVertices(), triangle2.getIndices()));
+    Model monkey{ "./res/monkey3.obj" };
+    monkey.finalize();
+    engine.addMesh(std::make_shared<Mesh>(device, monkey.getVertices(), monkey.getIndices()));
 
     while (!window.shouldClose()) {
         glfwPollEvents();

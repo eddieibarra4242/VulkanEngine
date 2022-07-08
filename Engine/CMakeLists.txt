@@ -59,4 +59,13 @@ add_custom_command(TARGET VkApp POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${PROJECT_BINARY_DIR}/shaders"
         "$<TARGET_FILE_DIR:VkApp>/shaders"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:VkApp>/res/"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${PROJECT_SOURCE_DIR}/res"
+        "$<TARGET_FILE_DIR:VkApp>/res"
+
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/res/"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${PROJECT_SOURCE_DIR}/res"
+            "${PROJECT_BINARY_DIR}/res"
 )

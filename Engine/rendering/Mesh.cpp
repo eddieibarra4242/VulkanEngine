@@ -16,6 +16,9 @@
 
 #include "Mesh.hpp"
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
+
 Mesh::Mesh(const Device& device, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) : m_vertexBuf{ device, vertices.size() * sizeof(Vertex), 1, 1, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT },
                                                                                                               m_indexBuf{ device, indices.size() * sizeof(uint32_t), 1, 1, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT },
                                                                                                               m_drawCount{ static_cast<uint32_t>(indices.size()) }
@@ -41,6 +44,81 @@ void Mesh::operator=(Mesh&& other)
 
 Mesh::Mesh(Mesh&& other) : m_vertexBuf(std::move(other.m_vertexBuf)), m_indexBuf(std::move(other.m_indexBuf)), m_drawCount{ other.m_drawCount }
 {
+}
+
+Model::Model(const char* filename)
+{
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+
+    std::string err;
+
+    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, filename, "./res/", false);
+
+    if (!err.empty()) {
+        spdlog::error("Tiny Obj Loader: {}", err);
+    }
+
+    if (!ret) {
+        throw std::runtime_error("Ret is false");
+    }
+
+    std::vector<uint32_t> indices;
+
+    for (tinyobj::shape_t shape : shapes) {
+        size_t indexOffset = 0;
+        for (size_t face = 0; face < shape.mesh.num_face_vertices.size(); face++) {
+            size_t vertexCount = static_cast<size_t>(shape.mesh.num_face_vertices[face]);
+
+            if (vertexCount < 3) {
+                spdlog::error("Stitching only supports face vertex counts of 3 or more.", err);
+                throw std::runtime_error("Mesh data is not for polygons.");
+            }
+
+            indices.reserve(vertexCount);
+            indices.clear();
+
+            for (size_t vertex = 0; vertex < vertexCount; vertex++) {
+                tinyobj::index_t ind = shape.mesh.indices[indexOffset + vertex];
+
+                glm::vec3 pos{ attrib.vertices[3 * static_cast<size_t>(ind.vertex_index) + 0],
+                    attrib.vertices[3 * static_cast<size_t>(ind.vertex_index) + 1],
+                    attrib.vertices[3 * static_cast<size_t>(ind.vertex_index) + 2] };
+
+                glm::vec3 normal;
+                glm::vec2 texCoord;
+
+                if (ind.normal_index >= 0) {
+                    normal = glm::vec3{ attrib.normals[3 * static_cast<size_t>(ind.normal_index) + 0],
+                        attrib.normals[3 * static_cast<size_t>(ind.normal_index) + 1],
+                        attrib.normals[3 * static_cast<size_t>(ind.normal_index) + 2] };
+                }
+
+                // Check if `texcoord_index` is zero or positive. negative = no texcoord data
+                if (ind.texcoord_index >= 0) {
+                    texCoord = glm::vec2{ attrib.texcoords[2 * static_cast<size_t>(ind.texcoord_index) + 0],
+                        attrib.texcoords[2 * static_cast<size_t>(ind.texcoord_index) + 1] };
+                }
+
+                if (ind.texcoord_index >= 0 && ind.normal_index >= 0) {
+                    indices.push_back(addVertex(pos, texCoord, normal));
+                } else if (ind.texcoord_index >= 0) {
+                    indices.push_back(addVertex(pos, texCoord));
+                } else {
+                    indices.push_back(addVertex(pos));
+                }
+            }
+
+            // do stitching
+            uint32_t firstIndex = indices[0];
+            for (size_t i = 1; i < indices.size() - 1; i++) {
+                addFace(firstIndex, indices[i], indices[i + 1]);
+            }
+
+            indexOffset += vertexCount;
+        }
+    }
 }
 
 void Model::calcNormals()

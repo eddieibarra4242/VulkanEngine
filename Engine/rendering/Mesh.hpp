@@ -91,6 +91,7 @@ class Model
 {
   public:
     Model() = default;
+    Model(const char* filename);
 
     Model(
         const std::vector<uint32_t>& indices,

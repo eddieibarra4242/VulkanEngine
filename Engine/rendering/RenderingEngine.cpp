@@ -71,6 +71,8 @@ RenderingEngine::RenderingEngine(const VkSurfaceKHR& surface, Device& device) : 
     m_mainCamera.m_viewProjection =
         glm::perspective(glm::pi<float>() / 2.0f, static_cast<float>(m_swapChain->extent().width) / static_cast<float>(m_swapChain->extent().height), 0.1f, 1000.0f) * glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -3));
 
+    m_mainCamera.m_viewProjection[1][1] *= -1;
+
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         m_globalUBO.write(&m_mainCamera, sizeof(CameraInfo), i);
         DescriptorSetWriter descWriter{ m_globalLayout, m_globalPool };
