@@ -32,13 +32,13 @@ int main()
     Window window(1280, 720, "Vk App");
     VkPhysicalDeviceFeatures targetFeatures{};
     Device device{ window.context(), window.surface(), targetFeatures };
-    
-    RenderingEngine engine { window.surface(), device };
+
+    RenderingEngine engine{ window.surface(), device };
 
     Model triangle;
 
     triangle.addFace(
-        triangle.addVertex(glm::vec3(-1, 1, 0)),  
+        triangle.addVertex(glm::vec3(-1, 1, 0)),
         triangle.addVertex(glm::vec3(0, 1, 0)),
         triangle.addVertex(glm::vec3(-.5f, -1, 0)));
 
@@ -49,12 +49,12 @@ int main()
     Model triangle2;
 
     triangle2.addFace(
-        triangle2.addVertex(glm::vec3(0, 1, 0)),  
+        triangle2.addVertex(glm::vec3(0, 1, 0)),
         triangle2.addVertex(glm::vec3(1, 1, 0)),
         triangle2.addVertex(glm::vec3(.5f, -1, 0)));
 
     triangle2.finalize();
-    
+
     engine.addMesh(std::make_shared<Mesh>(device, triangle2.getVertices(), triangle2.getIndices()));
 
     while (!window.shouldClose()) {

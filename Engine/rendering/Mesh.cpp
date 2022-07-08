@@ -1,15 +1,30 @@
+/*
+   Copyright 2022 Eduardo Ibarra
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "Mesh.hpp"
 
-Mesh::Mesh(const Device &device, const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices) : 
-    m_vertexBuf { device, vertices.size() * sizeof(Vertex), 1, 1, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT }, 
-    m_indexBuf { device, indices.size() * sizeof(uint32_t), 1, 1, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT }, 
-    m_drawCount { static_cast<uint32_t>(indices.size()) }
+Mesh::Mesh(const Device& device, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) : m_vertexBuf{ device, vertices.size() * sizeof(Vertex), 1, 1, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT },
+                                                                                                              m_indexBuf{ device, indices.size() * sizeof(uint32_t), 1, 1, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT },
+                                                                                                              m_drawCount{ static_cast<uint32_t>(indices.size()) }
 {
     m_vertexBuf.write(vertices.data(), vertices.size() * sizeof(Vertex), 0);
     m_indexBuf.write(indices.data(), indices.size() * sizeof(uint32_t), 0);
 }
 
-void Mesh::record_draw_command(const VkCommandBuffer &commandBuffer, uint32_t instanceCount, uint32_t instanceIDOffset) const
+void Mesh::record_draw_command(const VkCommandBuffer& commandBuffer, uint32_t instanceCount, uint32_t instanceIDOffset) const
 {
     VkDeviceSize offset = 0;
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_vertexBuf.buffer(), &offset);
@@ -26,7 +41,6 @@ void Mesh::operator=(Mesh&& other)
 
 Mesh::Mesh(Mesh&& other) : m_vertexBuf(std::move(other.m_vertexBuf)), m_indexBuf(std::move(other.m_indexBuf)), m_drawCount{ other.m_drawCount }
 {
-
 }
 
 void Model::calcNormals()
@@ -117,8 +131,8 @@ Model& Model::finalize()
         calcTangents();
     }
 
-    for(size_t i = 0; i < necessarySize; i++) {
-        m_vertices.emplace_back(Vertex{ m_positions[i]/*, m_texCoords[i], m_normals[i], m_tangents[i]*/ });
+    for (size_t i = 0; i < necessarySize; i++) {
+        m_vertices.emplace_back(Vertex{ m_positions[i] /*, m_texCoords[i], m_normals[i], m_tangents[i]*/ });
     }
 
     return *this;

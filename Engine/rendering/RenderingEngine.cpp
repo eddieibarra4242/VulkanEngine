@@ -1,13 +1,28 @@
+/*
+   Copyright 2022 Eduardo Ibarra
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "RenderingEngine.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
-RenderingEngine::RenderingEngine(const VkSurfaceKHR& surface, Device& device) : 
-    m_device{ device }, 
-    m_swapChain{ std::make_unique<SwapChain>(surface, device) }, 
-    m_globalUBO{ device, sizeof(CameraInfo), MAX_FRAMES_IN_FLIGHT, device.physicalDevice().m_properties.limits.minUniformBufferOffsetAlignment, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT },
-    m_globalLayout{ device },
-    m_globalPool{ device }
+RenderingEngine::RenderingEngine(const VkSurfaceKHR& surface, Device& device) : m_device{ device },
+                                                                                m_swapChain{ std::make_unique<SwapChain>(surface, device) },
+                                                                                m_globalUBO{ device, sizeof(CameraInfo), MAX_FRAMES_IN_FLIGHT, device.physicalDevice().m_properties.limits.minUniformBufferOffsetAlignment, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT },
+                                                                                m_globalLayout{ device },
+                                                                                m_globalPool{ device }
 {
     m_globalLayout.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT).seal();
     std::vector<VkDescriptorSetLayout> layouts;
@@ -53,13 +68,12 @@ RenderingEngine::RenderingEngine(const VkSurfaceKHR& surface, Device& device) :
 
     invalidateCommandBuffers();
 
-    m_mainCamera.m_viewProjection = 
-        glm::perspective(glm::pi<float>() / 2.0f, static_cast<float>(m_swapChain->extent().width) / static_cast<float>(m_swapChain->extent().height), 0.1f, 1000.0f) * 
-        glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -3));
+    m_mainCamera.m_viewProjection =
+        glm::perspective(glm::pi<float>() / 2.0f, static_cast<float>(m_swapChain->extent().width) / static_cast<float>(m_swapChain->extent().height), 0.1f, 1000.0f) * glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -3));
 
-    for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         m_globalUBO.write(&m_mainCamera, sizeof(CameraInfo), i);
-        DescriptorSetWriter descWriter {m_globalLayout, m_globalPool};
+        DescriptorSetWriter descWriter{ m_globalLayout, m_globalPool };
         descWriter.writeBuffer(0, &m_globalUBO.descInfo(static_cast<uint32_t>(i)));
         descWriter.createAndWrite(m_globalSets[i]);
     }
@@ -67,7 +81,7 @@ RenderingEngine::RenderingEngine(const VkSurfaceKHR& surface, Device& device) :
 
 RenderingEngine::~RenderingEngine()
 {
-    if(m_commandBuffers.size() != 0) {
+    if (m_commandBuffers.size() != 0) {
         vkFreeCommandBuffers(m_device.device(), m_device.graphicsPool(), static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
     }
 
@@ -83,13 +97,13 @@ RenderingEngine::~RenderingEngine()
 void RenderingEngine::recordCommandBuffer(uint32_t cbfIndex)
 {
     auto& commandBuffer = m_commandBuffers[cbfIndex];
-    
+
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = 0;// Optional
     beginInfo.pInheritanceInfo = nullptr;// Optional
 
-    ASSERT_VK_SUCCESS (vkBeginCommandBuffer(commandBuffer, &beginInfo), "failed to begin recording command buffer!");
+    ASSERT_VK_SUCCESS(vkBeginCommandBuffer(commandBuffer, &beginInfo), "failed to begin recording command buffer!");
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -99,7 +113,7 @@ void RenderingEngine::recordCommandBuffer(uint32_t cbfIndex)
     renderPassInfo.renderArea.extent = m_swapChain->extent();
 
     std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {.float32 = {0.f, 0.f, 0.f, 1.f}};
+    clearValues[0].color = { .float32 = { 0.f, 0.f, 0.f, 1.f } };
     clearValues[1].depthStencil = { 1.0f, 0 };
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -125,13 +139,13 @@ void RenderingEngine::recordCommandBuffer(uint32_t cbfIndex)
 
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_basicRasterPipeline->m_pipelineLayout, 0, 1, &m_globalSets[m_currentFrame], 0, nullptr);
 
-    for(auto& mesh : m_meshes) {
+    for (auto& mesh : m_meshes) {
         mesh->record_draw_command(commandBuffer);
     }
 
     vkCmdEndRenderPass(commandBuffer);
 
-    ASSERT_VK_SUCCESS (vkEndCommandBuffer(commandBuffer), "failed to record command buffer!");
+    ASSERT_VK_SUCCESS(vkEndCommandBuffer(commandBuffer), "failed to record command buffer!");
 }
 
 void RenderingEngine::createFramebuffers()
@@ -153,7 +167,7 @@ void RenderingEngine::createFramebuffers()
         framebufferInfo.height = m_swapChain->extent().height;
         framebufferInfo.layers = 1;
 
-        ASSERT_VK_SUCCESS (vkCreateFramebuffer(m_device.device(), &framebufferInfo, nullptr, &m_framebuffers[i]), "failed to create framebuffer!");
+        ASSERT_VK_SUCCESS(vkCreateFramebuffer(m_device.device(), &framebufferInfo, nullptr, &m_framebuffers[i]), "failed to create framebuffer!");
     }
 }
 
@@ -174,12 +188,12 @@ void RenderingEngine::resize()
 
 void RenderingEngine::render()
 {
-    //FIXME: bad style, remove nested if's
-    if(m_commandBuffersInvalidated) {
-        if(m_startingCBUpdateIndex == static_cast<uint32_t>(-1)) {
+    // FIXME: bad style, remove nested if's
+    if (m_commandBuffersInvalidated) {
+        if (m_startingCBUpdateIndex == static_cast<uint32_t>(-1)) {
             recordCommandBuffer(m_imageIndex);
             m_startingCBUpdateIndex = m_imageIndex;
-        }else if(m_startingCBUpdateIndex == m_imageIndex) {
+        } else if (m_startingCBUpdateIndex == m_imageIndex) {
             m_commandBuffersInvalidated = false;
             m_startingCBUpdateIndex = static_cast<uint32_t>(-1);
         } else {

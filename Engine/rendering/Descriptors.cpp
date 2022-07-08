@@ -1,10 +1,26 @@
+/*
+   Copyright 2022 Eduardo Ibarra
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "Descriptors.hpp"
 
 #include "VulkanUtils.hpp"
 
 void DescriptorSetLayout::destroy_internal()
 {
-    if(m_seal && m_layout != VK_NULL_HANDLE) {
+    if (m_seal && m_layout != VK_NULL_HANDLE) {
         vkDestroyDescriptorSetLayout(m_parent_dev.device(), m_layout, nullptr);
     }
 }
@@ -16,11 +32,11 @@ DescriptorSetLayout::~DescriptorSetLayout()
 
 DescriptorSetLayout& DescriptorSetLayout::addBinding(uint32_t binding, VkDescriptorType descType, VkShaderStageFlags stageFlags, uint32_t count)
 {
-    if(m_seal) {
+    if (m_seal) {
         return *this;
     }
 
-    if(m_bindings.count(binding) != 0) {
+    if (m_bindings.count(binding) != 0) {
         spdlog::error("Binding {} is already in use!", binding);
         return *this;
     }
@@ -36,18 +52,18 @@ DescriptorSetLayout& DescriptorSetLayout::addBinding(uint32_t binding, VkDescrip
 
 void DescriptorSetLayout::seal()
 {
-    if(m_seal) {
+    if (m_seal) {
         return;
     }
 
     m_seal = true;
 
     std::vector<VkDescriptorSetLayoutBinding> values;
-    for(auto kv : m_bindings) {
+    for (auto kv : m_bindings) {
         values.push_back(kv.second);
     }
 
-    VkDescriptorSetLayoutCreateInfo dslCreateInfo{ };
+    VkDescriptorSetLayoutCreateInfo dslCreateInfo{};
     dslCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     dslCreateInfo.bindingCount = static_cast<uint32_t>(values.size());
     dslCreateInfo.pBindings = values.data();
@@ -69,7 +85,7 @@ void DescriptorSetLayout::operator=(DescriptorSetLayout&& other)
 
 void DescriptorPool::destroy_internal()
 {
-    if(m_seal && m_descriptorPool != VK_NULL_HANDLE) {
+    if (m_seal && m_descriptorPool != VK_NULL_HANDLE) {
         vkDestroyDescriptorPool(m_parent_dev.device(), m_descriptorPool, nullptr);
     }
 }
@@ -81,16 +97,16 @@ DescriptorPool::~DescriptorPool()
 
 DescriptorPool& DescriptorPool::addPoolSize(VkDescriptorType descriptorType, uint32_t count)
 {
-    if(!m_seal) {
-        m_poolSizes.push_back({descriptorType, count});
+    if (!m_seal) {
+        m_poolSizes.push_back({ descriptorType, count });
     }
-    
+
     return *this;
 }
 
 DescriptorPool& DescriptorPool::setPoolFlags(VkDescriptorPoolCreateFlags flags)
 {
-    if(!m_seal) {
+    if (!m_seal) {
         m_poolFlags = flags;
     }
 
@@ -99,7 +115,7 @@ DescriptorPool& DescriptorPool::setPoolFlags(VkDescriptorPoolCreateFlags flags)
 
 DescriptorPool& DescriptorPool::setMaxSets(uint32_t count)
 {
-    if(!m_seal) {
+    if (!m_seal) {
         m_maxSets = count;
     }
 
@@ -108,7 +124,7 @@ DescriptorPool& DescriptorPool::setMaxSets(uint32_t count)
 
 void DescriptorPool::seal()
 {
-    if(m_seal) {
+    if (m_seal) {
         return;
     }
 
@@ -124,7 +140,7 @@ void DescriptorPool::seal()
     ASSERT_VK_SUCCESS(vkCreateDescriptorPool(m_parent_dev.device(), &descriptorPoolInfo, nullptr, &m_descriptorPool), "Failed to create Descriptor Pool!");
 }
 
-bool DescriptorPool::allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptor) const 
+bool DescriptorPool::allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet& descriptor) const
 {
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -141,7 +157,7 @@ bool DescriptorPool::allocateDescriptor(const VkDescriptorSetLayout descriptorSe
     return true;
 }
 
-void DescriptorPool::freeDescriptors(std::vector<VkDescriptorSet> &descriptors) const 
+void DescriptorPool::freeDescriptors(std::vector<VkDescriptorSet>& descriptors) const
 {
     vkFreeDescriptorSets(
         m_parent_dev.device(),
@@ -150,7 +166,7 @@ void DescriptorPool::freeDescriptors(std::vector<VkDescriptorSet> &descriptors) 
         descriptors.data());
 }
 
-void DescriptorPool::reset() 
+void DescriptorPool::reset()
 {
     vkResetDescriptorPool(m_parent_dev.device(), m_descriptorPool, 0);
 }
@@ -171,19 +187,19 @@ void DescriptorPool::operator=(DescriptorPool&& other)
 
 DescriptorSetWriter& DescriptorSetWriter::writeBuffer(uint32_t binding, VkDescriptorBufferInfo* info)
 {
-    if(m_layout.m_bindings.count(binding) != 1) {
+    if (m_layout.m_bindings.count(binding) != 1) {
         spdlog::error("Binding {} does not exist in layout!", binding);
         return *this;
     }
 
     VkDescriptorSetLayoutBinding& bindingDesc = m_layout.m_bindings[binding];
 
-    if(bindingDesc.descriptorCount != 1) {
+    if (bindingDesc.descriptorCount != 1) {
         spdlog::error("Binding {} does not 1 descriptor. Has {}.", binding, bindingDesc.descriptorCount);
         return *this;
     }
 
-    VkWriteDescriptorSet wr{ };
+    VkWriteDescriptorSet wr{};
     wr.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     wr.descriptorType = bindingDesc.descriptorType;
     wr.dstBinding = binding;
@@ -197,19 +213,19 @@ DescriptorSetWriter& DescriptorSetWriter::writeBuffer(uint32_t binding, VkDescri
 
 DescriptorSetWriter& DescriptorSetWriter::writeImage(uint32_t binding, VkDescriptorImageInfo* info)
 {
-    if(m_layout.m_bindings.count(binding) != 1) {
+    if (m_layout.m_bindings.count(binding) != 1) {
         spdlog::error("Binding {} does not exist in layout!", binding);
         return *this;
     }
 
     VkDescriptorSetLayoutBinding& bindingDesc = m_layout.m_bindings[binding];
 
-    if(bindingDesc.descriptorCount != 1) {
+    if (bindingDesc.descriptorCount != 1) {
         spdlog::error("Binding {} does not 1 descriptor. Has {}.", binding, bindingDesc.descriptorCount);
         return *this;
     }
 
-    VkWriteDescriptorSet wr{ };
+    VkWriteDescriptorSet wr{};
     wr.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     wr.descriptorType = bindingDesc.descriptorType;
     wr.dstBinding = binding;
@@ -225,7 +241,7 @@ bool DescriptorSetWriter::createAndWrite(VkDescriptorSet& set)
 {
     bool success = m_pool.allocateDescriptor(m_layout.m_layout, set);
 
-    if(success) {
+    if (success) {
         write(set);
     }
 
