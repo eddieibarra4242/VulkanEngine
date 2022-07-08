@@ -7,6 +7,7 @@ set(CPP_SOURCES
   rendering/BasicRasterPipeline.cpp
   rendering/Buffer.cpp
   rendering/Mesh.cpp
+  rendering/Descriptors.cpp
   rendering/RenderingEngine.cpp)
 
 add_library(vulkan SHARED IMPORTED)
@@ -25,7 +26,8 @@ target_link_libraries(
           CONAN_PKG::spdlog
           CONAN_PKG::glfw
           CONAN_PKG::glm
-          CONAN_PKG::stb)
+          CONAN_PKG::stb
+          CONAN_PKG::tinyobjloader)
 
 set(GLSL_VALIDATOR "glslangValidator")
 

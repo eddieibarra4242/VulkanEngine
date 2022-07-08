@@ -24,6 +24,9 @@
 
 #include "rendering/Mesh.hpp"
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
+
 int main()
 {
     Window window(1280, 720, "Vk App");

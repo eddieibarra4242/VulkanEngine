@@ -1,10 +1,21 @@
 #include "RenderingEngine.hpp"
 
+#include <glm/gtc/matrix_transform.hpp>
+
 RenderingEngine::RenderingEngine(const VkSurfaceKHR& surface, Device& device) : 
     m_device{ device }, 
     m_swapChain{ std::make_unique<SwapChain>(surface, device) }, 
-    m_basicRasterPipeline{ std::make_unique<BasicRasterPipeline>(device, *m_swapChain.get()) }
+    m_globalUBO{ device, sizeof(CameraInfo), MAX_FRAMES_IN_FLIGHT, device.physicalDevice().m_properties.limits.minUniformBufferOffsetAlignment, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT },
+    m_globalLayout{ device },
+    m_globalPool{ device }
 {
+    m_globalLayout.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT).seal();
+    std::vector<VkDescriptorSetLayout> layouts;
+    layouts.push_back(m_globalLayout.layout());
+    m_basicRasterPipeline = std::make_unique<BasicRasterPipeline>(device, *m_swapChain.get(), layouts);
+
+    m_globalPool.setMaxSets(MAX_FRAMES_IN_FLIGHT).addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT).seal();
+
     m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
@@ -41,6 +52,17 @@ RenderingEngine::RenderingEngine(const VkSurfaceKHR& surface, Device& device) :
     ASSERT_VK_SUCCESS(vkAllocateCommandBuffers(m_device.device(), &allocInfo, m_commandBuffers.data()), "failed to allocate command buffers!");
 
     invalidateCommandBuffers();
+
+    m_mainCamera.m_viewProjection = 
+        glm::perspective(glm::pi<float>() / 2.0f, static_cast<float>(m_swapChain->extent().width) / static_cast<float>(m_swapChain->extent().height), 0.1f, 1000.0f) * 
+        glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -3));
+
+    for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        m_globalUBO.write(&m_mainCamera, sizeof(CameraInfo), i);
+        DescriptorSetWriter descWriter {m_globalLayout, m_globalPool};
+        descWriter.writeBuffer(0, &m_globalUBO.descInfo(static_cast<uint32_t>(i)));
+        descWriter.createAndWrite(m_globalSets[i]);
+    }
 }
 
 RenderingEngine::~RenderingEngine()
@@ -100,6 +122,8 @@ void RenderingEngine::recordCommandBuffer(uint32_t cbfIndex)
 
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_basicRasterPipeline->m_pipelineLayout, 0, 1, &m_globalSets[m_currentFrame], 0, nullptr);
 
     for(auto& mesh : m_meshes) {
         mesh->record_draw_command(commandBuffer);

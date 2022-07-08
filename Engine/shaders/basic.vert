@@ -10,8 +10,13 @@ const vec3[3] colors = {
 
 layout(location = 0) out vec3 color;
 
+layout(set = 0, binding = 0) uniform CameraInfo
+{
+    mat4 vp;
+} cameraInfo;
+
 void main() 
 {
-    gl_Position = vec4(position, 1);
-    color = colors[gl_VertexIndex];
+    gl_Position = cameraInfo.vp * vec4(position, 1);
+    color = colors[gl_VertexIndex % 3];
 }

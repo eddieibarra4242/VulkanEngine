@@ -4,6 +4,12 @@
 
 #include "Pipeline.hpp"
 #include "Mesh.hpp"
+#include "Descriptors.hpp"
+
+struct CameraInfo
+{
+    glm::mat4 m_viewProjection;
+};
 
 class RenderingEngine
 {
@@ -40,6 +46,12 @@ private:
     std::vector<VkCommandBuffer> m_commandBuffers;
 
     std::vector<std::shared_ptr<Mesh>> m_meshes;
+
+    CameraInfo m_mainCamera;
+    Buffer m_globalUBO;
+    DescriptorSetLayout m_globalLayout;
+    DescriptorPool m_globalPool;
+    std::vector<VkDescriptorSet> m_globalSets{ MAX_FRAMES_IN_FLIGHT };
 
     void createFramebuffers();
     void destroyFramebuffers();
