@@ -14,6 +14,7 @@
    limitations under the License.
 */
 
+#include <cstddef>
 #include <cstdlib>
 #include <spdlog/common.h>
 #include <spdlog/spdlog.h>
@@ -26,9 +27,36 @@
 
 #include "rendering/Mesh.hpp"
 
+#include "ecs/ECSComponent.hpp"
+#include "ecs/ECSSystem.hpp"
+#include "ecs/ECS.hpp"
+
+struct TestComponent : public ECSComponent<TestComponent>
+{
+    float x;
+    float y;
+};
+
+class TestSystem : public ECSSystem
+{
+  public:
+    TestSystem()
+    {
+        addComponentType(TestComponent::ID);
+    }
+
+    virtual void update(float delta, Entity_t entity) override
+    {
+        TestComponent* tc = get<TestComponent>(entity);
+        spdlog::info("Test update called\n x: {} y: {} delta: {}", tc->x, tc->y, delta);
+    }
+};
+
 int main()
 {
+#ifndef NDEBUG
     spdlog::set_level(spdlog::level::debug);
+#endif
 
     Window window(1280, 720, "Vk App");
     VkPhysicalDeviceFeatures targetFeatures{};
@@ -40,7 +68,20 @@ int main()
     monkey.finalize();
     engine.addMesh(std::make_shared<Mesh>(device, monkey.getVertices(), monkey.getIndices()));
 
-    typeof(monkey) m{ "" };
+    // example ecs code
+    ECS ecs;
+
+    Entity_t e = ecs.createEntity();
+
+    TestComponent c{ .x = 0.3f, .y = 0.15f };
+    ecs.addComponent(e, c);
+
+    TestSystem s;
+
+    std::vector<ECSSystem*> systems;
+    systems.push_back(&s);
+
+    ecs.updateSystems(systems, 10.15f);
 
     while (!window.shouldClose()) {
         glfwPollEvents();

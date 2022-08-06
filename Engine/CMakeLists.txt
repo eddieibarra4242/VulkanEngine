@@ -8,7 +8,9 @@ set(CPP_SOURCES
   rendering/Buffer.cpp
   rendering/Mesh.cpp
   rendering/Descriptors.cpp
-  rendering/RenderingEngine.cpp)
+  rendering/RenderingEngine.cpp
+  ecs/ECS.cpp
+  ecs/ECSComponent.cpp)
 
 add_library(vulkan SHARED IMPORTED)
 set_target_properties(vulkan PROPERTIES 
