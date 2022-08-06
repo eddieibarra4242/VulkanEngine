@@ -15,6 +15,8 @@
 */
 
 #include <cstdlib>
+#include <spdlog/common.h>
+#include <spdlog/spdlog.h>
 #include "window.hpp"
 
 #include "rendering/Device.hpp"
@@ -26,6 +28,8 @@
 
 int main()
 {
+    spdlog::set_level(spdlog::level::debug);
+
     Window window(1280, 720, "Vk App");
     VkPhysicalDeviceFeatures targetFeatures{};
     Device device{ window.context(), window.surface(), targetFeatures };
@@ -35,6 +39,8 @@ int main()
     Model monkey{ "./res/monkey3.obj" };
     monkey.finalize();
     engine.addMesh(std::make_shared<Mesh>(device, monkey.getVertices(), monkey.getIndices()));
+
+    typeof(monkey) m{ "" };
 
     while (!window.shouldClose()) {
         glfwPollEvents();

@@ -170,7 +170,7 @@ void Image::createInternal(void* data, VkFormat format)
     createImage(m_device, m_width, m_height, format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_image, m_memory);
 
     transitionImageLayout(m_device, m_image, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    copyBufferToImage(m_device.device(), m_device.graphicsPool(), m_device.graphicsQueue(), buf.buffer(), m_image, static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height));
+    copyBufferToImage(m_device.device(), m_device.graphicsPool(), m_device.graphicsQueue(), buf.buffer(), m_image, m_width, m_height);
     transitionImageLayout(m_device, m_image, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     m_imageView = createImageView(m_device.device(), m_image, format, VK_IMAGE_ASPECT_COLOR_BIT);
@@ -198,7 +198,9 @@ void Image::createInternal(void* data, VkFormat format)
 
 Image::Image(const Device& device, const char* filename, VkFormat format) : m_device{ device }
 {
-    int w, h, c;
+    int w = 0;
+    int h = 0;
+    int c;
     stbi_uc* data = stbi_load(filename, &w, &h, &c, PIXEL_SIZE);
 
     m_width = static_cast<uint32_t>(w);

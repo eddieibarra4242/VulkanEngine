@@ -26,7 +26,7 @@ class Buffer
   public:
     [[nodiscard]] static constexpr VkDeviceSize align(size_t size, VkDeviceSize alignment)
     {
-        return (static_cast<VkDeviceSize>(size) + alignment - 1) & ~(alignment - 1);
+        return (size + alignment - 1) & ~(alignment - 1);
     }
 
     Buffer(const Device& device, VkDeviceSize instanceSize, VkDeviceSize instanceCount, VkDeviceSize alignment, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
