@@ -38,12 +38,6 @@ class RenderingEngine
     void render();
     void present();
 
-    // Temporary
-    inline void addMesh(const std::shared_ptr<Mesh> mesh)
-    {
-        m_meshes.push_back(mesh);
-    }
-
   private:
     const Device& m_device;
     std::unique_ptr<SwapChain> m_swapChain;
@@ -61,8 +55,6 @@ class RenderingEngine
     uint32_t m_startingCBUpdateIndex = static_cast<uint32_t>(-1);
     std::vector<VkFramebuffer> m_framebuffers;
     std::vector<VkCommandBuffer> m_commandBuffers;
-
-    std::vector<std::shared_ptr<Mesh>> m_meshes;
 
     CameraInfo m_mainCamera;
     Buffer m_globalUBO;

@@ -97,8 +97,8 @@ template<typename Component>
 [[nodiscard]] ComponentInfo copyComponent(std::vector<uint8_t>& memory, Component* component, size_t index)
 {
     memory.resize(index + Component::SIZE);
-    Component* newComponent = new (&memory[index]) Component(*component);
-    return ComponentInfo{ Component::ID, index };
+    new (&memory[index]) Component(*component);
+    return ComponentInfo{ Component::ID, static_cast<uint32_t>(index) };
 }
 
 template<typename Component>

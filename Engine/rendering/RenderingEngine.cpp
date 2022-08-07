@@ -141,9 +141,9 @@ void RenderingEngine::recordCommandBuffer(uint32_t cbfIndex)
 
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_basicRasterPipeline->m_pipelineLayout, 0, 1, &m_globalSets[m_currentFrame], 0, nullptr);
 
-    for (auto& mesh : m_meshes) {
-        mesh->record_draw_command(commandBuffer);
-    }
+    //     for (auto& mesh : m_meshes) {
+    //         mesh->record_draw_command(commandBuffer);
+    //     }
 
     vkCmdEndRenderPass(commandBuffer);
 

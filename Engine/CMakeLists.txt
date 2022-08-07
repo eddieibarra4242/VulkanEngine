@@ -1,6 +1,7 @@
 set(CPP_SOURCES 
   main.cpp 
   window.cpp 
+  CoreEngine.cpp
   rendering/Device.cpp
   rendering/Image.cpp
   rendering/SwapChain.cpp
