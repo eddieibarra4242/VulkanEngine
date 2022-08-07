@@ -25,10 +25,7 @@
 class CoreEngine
 {
   public:
-    CoreEngine(Window& window, float fixedFPS = 60.0f, VkPhysicalDeviceFeatures targetFeatures = {}) : m_window(window),
-                                                                                                       m_device{ window.context(), window.surface(), targetFeatures },
-                                                                                                       m_renderingEngine{ window.surface(), m_device },
-                                                                                                       m_frameTime{ 1.0f / fixedFPS } {}
+    CoreEngine(Window& window, float fixedFPS = 60.0f, VkPhysicalDeviceFeatures targetFeatures = {});
 
     void run();
 
@@ -49,4 +46,6 @@ class CoreEngine
     RenderingEngine m_renderingEngine;
 
     float m_frameTime;
+
+    std::unique_ptr<CameraScrapper> m_cameraScrapper;
 };

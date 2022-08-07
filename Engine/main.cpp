@@ -16,6 +16,11 @@
 
 #include <spdlog/spdlog.h>
 
+#include "components/Camera.hpp"
+#include "components/Transform.hpp"
+#include "ecs/ECSComponent.hpp"
+#include "systems/FreeLook.hpp"
+#include "systems/FreeMove.hpp"
 #include "window.hpp"
 #include "CoreEngine.hpp"
 
@@ -27,6 +32,18 @@ int main()
 
     Window window(1280, 720, "Vk App");
     CoreEngine engine(window, 144.0f);
+
+    Entity_t player = engine.scene().createEntity();
+
+    engine.scene().addComponent(player, Transform{});
+    engine.scene().addComponent(player, Camera{});
+
+    FreeLook lookSystem{ window, 50.0f, true };
+    FreeMove moveSystem{ window };
+
+    engine.addUpdateSystem(&lookSystem);
+    engine.addUpdateSystem(&moveSystem);
+
     engine.run();
 
     return EXIT_SUCCESS;

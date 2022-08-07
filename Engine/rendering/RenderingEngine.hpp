@@ -22,6 +22,8 @@
 #include "Mesh.hpp"
 #include "Descriptors.hpp"
 
+
+#include "../ecs/ECSSystem.hpp"
 struct CameraInfo
 {
     glm::mat4 m_viewProjection;
@@ -62,6 +64,8 @@ class RenderingEngine
     DescriptorPool m_globalPool;
     std::vector<VkDescriptorSet> m_globalSets{ MAX_FRAMES_IN_FLIGHT };
 
+    std::unique_ptr<Mesh> m_monkey;
+
     void createFramebuffers();
     void destroyFramebuffers();
 
@@ -76,4 +80,17 @@ class RenderingEngine
 
         m_commandBuffersInvalidated = true;
     }
+
+    friend class CameraScrapper;
+};
+
+class CameraScrapper : public ECSSystem
+{
+  public:
+    CameraScrapper(RenderingEngine& parentEngine);
+
+    virtual void update(float delta, Entity_t entity) override;
+
+  private:
+    RenderingEngine& m_parentEngine;
 };

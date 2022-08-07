@@ -1,14 +1,9 @@
 #version 450
 
-layout(location = 0) in vec3 position;
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec3 inNormal;
 
-const vec3[3] colors = {
-    vec3(1, 0, 0),
-    vec3(0, 0, 1),
-    vec3(0, 1, 0)
-};
-
-layout(location = 0) out vec3 color;
+layout(location = 0) out vec3 normal;
 
 layout(set = 0, binding = 0) uniform CameraInfo
 {
@@ -17,6 +12,6 @@ layout(set = 0, binding = 0) uniform CameraInfo
 
 void main() 
 {
-    gl_Position = cameraInfo.vp * vec4(position, 1);
-    color = colors[gl_VertexIndex % 3];
+    gl_Position = cameraInfo.vp * vec4(inPosition, 1);
+    normal = inNormal; //TODO: apply model mat
 }

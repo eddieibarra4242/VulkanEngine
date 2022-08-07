@@ -210,7 +210,7 @@ Model& Model::finalize()
     }
 
     for (size_t i = 0; i < necessarySize; i++) {
-        m_vertices.emplace_back(Vertex{ m_positions[i] /*, m_texCoords[i], m_normals[i], m_tangents[i]*/ });
+        m_vertices.emplace_back(Vertex{ m_positions[i], /*m_texCoords[i],*/ m_normals[i] /*, m_tangents[i]*/ });
     }
 
     return *this;

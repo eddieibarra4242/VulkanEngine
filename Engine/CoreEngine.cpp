@@ -20,6 +20,7 @@
 #include <GLFW/glfw3.h>
 #include <bits/chrono.h>
 #include <chrono>
+#include <memory>
 #include <ratio>
 #include <spdlog/spdlog.h>
 
@@ -29,6 +30,15 @@ typedef std::chrono::system_clock::time_point Time;
 constexpr float toSeconds(std::chrono::nanoseconds d)
 {
     return static_cast<float>(d.count()) / 1000000000.0f;
+}
+
+CoreEngine::CoreEngine(Window& window, float fixedFPS, VkPhysicalDeviceFeatures targetFeatures) : m_window(window),
+                                                                                                  m_device{ window.context(), window.surface(), targetFeatures },
+                                                                                                  m_renderingEngine{ window.surface(), m_device },
+                                                                                                  m_frameTime{ 1.0f / fixedFPS },
+                                                                                                  m_cameraScrapper{ std::make_unique<CameraScrapper>(m_renderingEngine) }
+{
+    m_renderSystems.push_back(m_cameraScrapper.get());
 }
 
 void CoreEngine::run()

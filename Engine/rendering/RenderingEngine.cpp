@@ -16,7 +16,36 @@
 
 #include "RenderingEngine.hpp"
 
+#include "../components/Transform.hpp"
+#include "../components/Camera.hpp"
+#include "Mesh.hpp"
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
+
+CameraScrapper::CameraScrapper(RenderingEngine& parentEngine) : m_parentEngine{ parentEngine }
+{
+    addComponentType(Transform::ID);
+    addComponentType(Camera::ID);
+}
+
+void CameraScrapper::update([[maybe_unused]] float delta, Entity_t entity)
+{
+    Transform& transform = *get<Transform>(entity);
+    Camera& camera = *get<Camera>(entity);
+
+    glm::mat4 projection{ glm::perspective(camera.fov, 16.0f / 9.0f, camera.nearClipPlane, camera.farClipPlane) };
+    glm::mat4 view{ glm::toMat4(glm::conjugate(transform.m_orientation)) };
+
+    view *= glm::translate(glm::identity<glm::mat4>(), -transform.m_position);
+
+    projection[1][1] *= -1;
+    m_parentEngine.m_mainCamera.m_viewProjection = projection * view;
+
+    for (size_t i = 0; i < RenderingEngine::MAX_FRAMES_IN_FLIGHT; i++) {
+        m_parentEngine.m_globalUBO.write(&m_parentEngine.m_mainCamera, sizeof(CameraInfo), i);
+    }
+}
 
 RenderingEngine::RenderingEngine(const VkSurfaceKHR& surface, Device& device) : m_device{ device },
                                                                                 m_swapChain{ std::make_unique<SwapChain>(surface, device) },
@@ -68,10 +97,7 @@ RenderingEngine::RenderingEngine(const VkSurfaceKHR& surface, Device& device) : 
 
     invalidateCommandBuffers();
 
-    m_mainCamera.m_viewProjection =
-        glm::perspective(glm::pi<float>() / 2.0f, static_cast<float>(m_swapChain->extent().width) / static_cast<float>(m_swapChain->extent().height), 0.1f, 1000.0f) * glm::translate(glm::identity<glm::mat4>(), glm::vec3(0, 0, -3));
-
-    m_mainCamera.m_viewProjection[1][1] *= -1;
+    m_mainCamera.m_viewProjection = glm::identity<glm::mat4>();
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         m_globalUBO.write(&m_mainCamera, sizeof(CameraInfo), i);
@@ -79,6 +105,11 @@ RenderingEngine::RenderingEngine(const VkSurfaceKHR& surface, Device& device) : 
         descWriter.writeBuffer(0, &m_globalUBO.descInfo(static_cast<uint32_t>(i)));
         descWriter.createAndWrite(m_globalSets[i]);
     }
+
+    Model monke{ "./res/monkey3.obj" };
+    monke.finalize();
+
+    m_monkey = std::make_unique<Mesh>(m_device, monke.getVertices(), monke.getIndices());
 }
 
 RenderingEngine::~RenderingEngine()
@@ -144,6 +175,8 @@ void RenderingEngine::recordCommandBuffer(uint32_t cbfIndex)
     //     for (auto& mesh : m_meshes) {
     //         mesh->record_draw_command(commandBuffer);
     //     }
+
+    m_monkey->record_draw_command(commandBuffer);
 
     vkCmdEndRenderPass(commandBuffer);
 

@@ -11,7 +11,9 @@ set(CPP_SOURCES
   rendering/Descriptors.cpp
   rendering/RenderingEngine.cpp
   ecs/ECS.cpp
-  ecs/ECSComponent.cpp)
+  ecs/ECSComponent.cpp
+  systems/FreeLook.cpp
+  systems/FreeMove.cpp)
 
 add_library(vulkan SHARED IMPORTED)
 set_target_properties(vulkan PROPERTIES 

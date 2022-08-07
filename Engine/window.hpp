@@ -32,6 +32,7 @@ class Window
     bool shouldClose() const;
 
     [[nodiscard]] constexpr GLFWwindow* glfwWindowPtr() { return m_window; }
+    [[nodiscard]] constexpr const GLFWwindow* glfwWindowPtr() const { return m_window; }
 
     [[nodiscard]] constexpr uint32_t width() const { return m_width; }
     [[nodiscard]] constexpr uint32_t height() const { return m_height; }

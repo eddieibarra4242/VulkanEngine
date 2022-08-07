@@ -44,6 +44,14 @@ class ECS
     }
 
     template<typename Component>
+    void addComponent(Entity_t entity, Component&& component)
+    {
+        auto& memory = m_components[Component::ID];
+        component.m_entity = entity;
+        entity->m_infos.push_back(copyComponent<Component>(memory, &component, memory.size()));
+    }
+
+    template<typename Component>
     bool removeComponent(Entity_t entity)
     {
         for (uint32_t i = 0; i < entity->m_infos.size(); i++) {
