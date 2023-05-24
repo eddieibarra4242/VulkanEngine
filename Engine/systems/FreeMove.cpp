@@ -20,8 +20,8 @@
 #include "../components/Camera.hpp"
 #include <GLFW/glfw3.h>
 
-static constexpr glm::vec3 RIGHT{ 1, 0, 0 };
-static constexpr glm::vec3 FORWARD{ 0, 0, 1 };
+static glm::vec3 RIGHT{ 1, 0, 0 };
+static glm::vec3 FORWARD{ 0, 0, 1 };
 
 FreeMove::FreeMove(Window& window, float speed) : m_inputContext(window), m_speed(speed)
 {

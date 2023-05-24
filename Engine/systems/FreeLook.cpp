@@ -19,14 +19,13 @@
 #include "../components/Transform.hpp"
 #include "../components/Camera.hpp"
 
-#include <glm/detail/qualifier.hpp>
 #include <glm/glm.hpp>
 
 static constexpr int MOUSE_LEFT = 0;
 static constexpr int MOUSE_RIGHT = 1;
 
-static constexpr glm::vec3 UP{ 0, 1, 0 };
-static constexpr glm::vec3 RIGHT{ 1, 0, 0 };
+static glm::vec3 UP{ 0, 1, 0 };
+static glm::vec3 RIGHT{ 1, 0, 0 };
 
 FreeLook::FreeLook(Window& window, float sensitivity, bool invertY) : m_inputContext(window), m_locked(false), m_sensitivity(sensitivity), m_invertY(invertY)
 {
@@ -36,7 +35,7 @@ FreeLook::FreeLook(Window& window, float sensitivity, bool invertY) : m_inputCon
 
 void FreeLook::update(float delta, Entity_t entity)
 {
-    using vec2d = glm::vec<2, double, glm::packed_highp>;
+    using vec2d = glm::dvec2;
 
     Transform& transform = *get<Transform>(entity);
 

@@ -15,6 +15,9 @@ set(CPP_SOURCES
   systems/FreeLook.cpp
   systems/FreeMove.cpp)
 
+include_directories(../submodules/glm)
+include_directories(../submodules/stb)
+
 add_library(vulkan SHARED IMPORTED)
 set_target_properties(vulkan PROPERTIES 
   IMPORTED_LOCATION "/usr/lib/libvulkan.so" 
@@ -27,12 +30,10 @@ target_link_libraries(
   PRIVATE project_options
           project_warnings
           vulkan
-          CONAN_PKG::fmt
-          CONAN_PKG::spdlog
-          CONAN_PKG::glfw
-          CONAN_PKG::glm
-          CONAN_PKG::stb
-          CONAN_PKG::tinyobjloader)
+        glfw
+        tinyobjloader
+        spdlog::spdlog
+        )
 
 set(GLSL_VALIDATOR "glslangValidator")
 

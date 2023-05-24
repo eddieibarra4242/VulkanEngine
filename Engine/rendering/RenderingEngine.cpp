@@ -19,7 +19,6 @@
 #include "../components/Transform.hpp"
 #include "../components/Camera.hpp"
 #include "Mesh.hpp"
-#include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
@@ -37,7 +36,7 @@ void CameraScrapper::update([[maybe_unused]] float delta, Entity_t entity)
     glm::mat4 projection{ glm::perspective(camera.fov, 16.0f / 9.0f, camera.nearClipPlane, camera.farClipPlane) };
     glm::mat4 view{ glm::toMat4(glm::conjugate(transform.m_orientation)) };
 
-    view *= glm::translate(glm::identity<glm::mat4>(), -transform.m_position);
+    view *= glm::translate(glm::mat4(1.0f), -transform.m_position);
 
     projection[1][1] *= -1;
     m_parentEngine.m_mainCamera.m_viewProjection = projection * view;
@@ -97,7 +96,7 @@ RenderingEngine::RenderingEngine(const VkSurfaceKHR& surface, Device& device) : 
 
     invalidateCommandBuffers();
 
-    m_mainCamera.m_viewProjection = glm::identity<glm::mat4>();
+    m_mainCamera.m_viewProjection = glm::mat4(1.0f);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         m_globalUBO.write(&m_mainCamera, sizeof(CameraInfo), i);

@@ -52,9 +52,10 @@ Model::Model(const char* filename)
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
 
+    std::string warn;
     std::string err;
 
-    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, filename, "./res/", false);
+    auto ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename, "./res/", false);
 
     if (!err.empty()) {
         spdlog::error("Tiny Obj Loader: {}", err);

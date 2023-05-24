@@ -18,11 +18,9 @@
 
 #include "../ecs/ECSComponent.hpp"
 
-constexpr float PI = 3.141593f;
-
 struct Camera : ECSComponent<Camera>
 {
-    float fov = PI / 2.0f;
+    float fov = 90.0f;
     float nearClipPlane = 0.1f;
     float farClipPlane = 1000.0f;
 };

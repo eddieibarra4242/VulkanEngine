@@ -35,3 +35,6 @@
 staging/
 build/
 .cache/
+cmake-build-debug/
+cmake-build-release/
+.idea/

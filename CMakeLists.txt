@@ -24,25 +24,10 @@ include(cmake/Cache.cmake)
 include(cmake/CompilerWarnings.cmake)
 set_project_warnings(project_warnings)
 
-# sanitizer options if supported by compiler
-include(cmake/Sanitizers.cmake)
-enable_sanitizers(project_options)
-
 # allow for static analysis options
 include(cmake/StaticAnalyzers.cmake)
 
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
 
-# Set up some extra Conan dependencies based on our needs before loading Conan
-set(CONAN_EXTRA_REQUIRES "")
-set(CONAN_EXTRA_OPTIONS "")
-
-set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} glfw/3.3.4)
-set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} glm/0.9.9.8)
-set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} stb/cci.20210910)
-set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} tinyobjloader/1.0.6)
-
-include(cmake/Conan.cmake)
-run_conan()
-
+add_subdirectory(submodules)
 add_subdirectory(Engine)

@@ -30,7 +30,7 @@ int main()
     spdlog::set_level(spdlog::level::debug);
 #endif
 
-    Window window(1280, 720, "Vk App");
+    Window window(1920, 1080, "Vk App");
     CoreEngine engine(window, 144.0f);
 
     Entity_t player = engine.scene().createEntity();
@@ -38,7 +38,7 @@ int main()
     engine.scene().addComponent(player, Transform{});
     engine.scene().addComponent(player, Camera{});
 
-    FreeLook lookSystem{ window, 50.0f, true };
+    FreeLook lookSystem{ window, 5000.0f, true };
     FreeMove moveSystem{ window };
 
     engine.addUpdateSystem(&lookSystem);
