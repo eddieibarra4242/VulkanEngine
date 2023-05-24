@@ -17,7 +17,7 @@
 #include "Mesh.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
+#include "tiny_obj_loaderNoIW.h"
 
 Mesh::Mesh(const Device& device, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) : m_vertexBuf{ device, vertices.size() * sizeof(Vertex), 1, 1, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT },
                                                                                                               m_indexBuf{ device, indices.size() * sizeof(uint32_t), 1, 1, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT },
