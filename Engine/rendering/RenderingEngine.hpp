@@ -81,13 +81,13 @@ class RenderingEngine
         m_commandBuffersInvalidated = true;
     }
 
-    friend class CameraScrapper;
+    friend class CameraScraper;
 };
 
-class CameraScrapper : public ECSSystem
+class CameraScraper : public ECSSystem
 {
   public:
-    CameraScrapper(RenderingEngine& parentEngine);
+    CameraScraper(RenderingEngine& parentEngine);
 
     virtual void update(float delta, Entity_t entity) override;
 

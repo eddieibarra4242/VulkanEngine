@@ -15,8 +15,12 @@ set(CPP_SOURCES
   systems/FreeLook.cpp
   systems/FreeMove.cpp)
 
+include_directories(../NoImplementationWarnings)
 include_directories(../submodules/glm)
 include_directories(../submodules/stb)
+
+# register keyword no longer exists in c++17 and beyond. GLM still uses this keyword :(
+add_compile_definitions(register= )
 
 add_library(vulkan SHARED IMPORTED)
 set_target_properties(vulkan PROPERTIES 

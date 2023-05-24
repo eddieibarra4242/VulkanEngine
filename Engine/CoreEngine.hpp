@@ -47,5 +47,5 @@ class CoreEngine
 
     float m_frameTime;
 
-    std::unique_ptr<CameraScrapper> m_cameraScrapper;
+    std::unique_ptr<CameraScraper> m_cameraScraper;
 };

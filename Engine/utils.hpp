@@ -18,7 +18,7 @@
 
 #include <vulkan/vulkan.h>
 #include <string_view>
-#include <spdlog/spdlog.h>
+#include <spdlogNoIW.h>
 
 #define DELETE_COPY(Class)        \
     Class(const Class&) = delete; \

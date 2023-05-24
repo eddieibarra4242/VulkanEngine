@@ -22,13 +22,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-CameraScrapper::CameraScrapper(RenderingEngine& parentEngine) : m_parentEngine{ parentEngine }
+CameraScraper::CameraScraper(RenderingEngine& parentEngine) : m_parentEngine{ parentEngine }
 {
     addComponentType(Transform::ID);
     addComponentType(Camera::ID);
 }
 
-void CameraScrapper::update([[maybe_unused]] float delta, Entity_t entity)
+void CameraScraper::update([[maybe_unused]] float delta, Entity_t entity)
 {
     Transform& transform = *get<Transform>(entity);
     Camera& camera = *get<Camera>(entity);

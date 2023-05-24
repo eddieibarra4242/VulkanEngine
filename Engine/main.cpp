@@ -14,7 +14,7 @@
    limitations under the License.
 */
 
-#include <spdlog/spdlog.h>
+#include <spdlogNoIW.h>
 
 #include "components/Camera.hpp"
 #include "components/Transform.hpp"
